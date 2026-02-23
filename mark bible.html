@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bible Attendance Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --parchment: #f5ead6;
+    --parchment-dark: #e8d5b0;
+    --ink: #2c1a0e;
+    --ink-light: #5c3d1e;
+    --green: #1a5c2e;
+    --green-light: #1f6e36;
+    --shadow: rgba(44, 26, 14, 0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--ink);
+    font-family: 'Lora', serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, #3d1a05 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 50%, #1a0d03 0%, transparent 60%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 40px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+    animation: fadeDown 1s ease forwards;
+  }
+
+  .cross-icon {
+    font-size: 2.5rem;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 8px;
+    text-shadow: 0 0 20px rgba(201,168,76,0.5);
+  }
+
+  h1 {
+    font-family: 'Cinzel Decorative', cursive;
+    color: var(--gold);
+    font-size: clamp(1.2rem, 4vw, 2rem);
+    letter-spacing: 2px;
+    text-shadow: 0 2px 10px rgba(201,168,76,0.4);
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    color: var(--parchment-dark);
+    font-style: italic;
+    font-size: 0.88rem;
+    margin-top: 6px;
+    opacity: 0.8;
+  }
+
+  .card {
+    background: var(--parchment);
+    border-radius: 4px;
+    padding: 24px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 8px 40px var(--shadow), inset 0 0 60px rgba(201,168,76,0.05);
+    border: 1px solid var(--gold);
+    position: relative;
+    animation: fadeUp 0.8s ease forwards;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 3px;
+    pointer-events: none;
+  }
+
+  .section-label {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  /* Notifications */
+  .notif-section {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 3px;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+  }
+
+  .notif-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .notif-status {
+    font-size: 0.83rem;
+    color: var(--ink-light);
+    font-style: italic;
+    flex: 1;
+  }
+
+  .enable-btn {
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    padding: 7px 16px;
+    font-family: 'Lora', serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.25s;
+    white-space: nowrap;
+  }
+
+  .enable-btn:hover { background: var(--gold-light); }
+
+  /* Today */
+  .today-section { margin-bottom: 24px; }
+
+  .today-label {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 0.62rem;
+    letter-spacing: 3px;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+    text-align: center;
+  }
+
+  .today-date {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .verse-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .field-wrap { display: flex; flex-direction: column; }
+
+  .field-label {
+    font-size: 0.7rem;
+    font-family: 'Cinzel Decorative', cursive;
+    letter-spacing: 1px;
+    color: var(--ink-light);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  input[type="text"], textarea {
+    background: rgba(255,255,255,0.65);
+    border: 1px solid rgba(201,168,76,0.5);
+    border-radius: 2px;
+    padding: 8px 10px;
+    font-family: 'Lora', serif;
+    font-size: 0.85rem;
+    color: var(--ink);
+    width: 100%;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(201,168,76,0.2);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 58px;
+    line-height: 1.5;
+  }
+
+  .mark-btn {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    padding: 13px 32px;
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 0.82rem;
+    letter-spacing: 1px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(26,92,46,0.4);
+    display: block;
+    width: 100%;
+  }
+
+  .mark-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,92,46,0.5); background: var(--green-light); }
+
+  .marked-badge {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(26,92,46,0.08);
+    border: 1px solid var(--green);
+    border-radius: 3px;
+    padding: 14px 16px;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .marked-icon { color: var(--green); font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+  .marked-info { flex: 1; }
+
+  .marked-title {
+    color: var(--green);
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+
+  .marked-verse {
+    color: var(--ink-light);
+    font-size: 0.83rem;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .marked-notes {
+    color: var(--ink-light);
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-top: 4px;
+  }
+
+  .edit-btn {
+    background: none;
+    border: 1px solid rgba(201,168,76,0.5);
+    color: var(--ink-light);
+    font-size: 0.72rem;
+    font-family: 'Lora', serif;
+    padding: 5px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+
+  .edit-btn:hover { border-color: var(--gold); color: var(--ink); }
+
+  .cancel-link {
+    display: block;
+    text-align: center;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--ink-light);
+    cursor: pointer;
+    text-decoration: underline;
+    font-style: italic;
+  }
+
+  /* Calendar */
+  .month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .month-name {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 0.73rem;
+    color: var(--ink);
+    letter-spacing: 1px;
+  }
+
+  .nav-btn {
+    background: none;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    width: 28px;
+    height: 28px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-btn:hover { background: var(--gold); color: var(--ink); }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+
+  .cal-day-header {
+    text-align: center;
+    font-size: 0.6rem;
+    font-family: 'Cinzel Decorative', cursive;
+    letter-spacing: 1px;
+    color: var(--ink-light);
+    padding: 4px 0;
+  }
+
+  .cal-day {
+    text-align: center;
+    padding: 6px 2px;
+    font-size: 0.78rem;
+    border-radius: 2px;
+    position: relative;
+    transition: transform 0.15s;
+  }
+
+  .cal-day.attended {
+    background: var(--green);
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(26,92,46,0.4);
+    cursor: pointer;
+  }
+
+  .cal-day.attended:hover { transform: scale(1.15); z-index: 2; }
+
+  .cal-day.today-marker {
+    border: 2px solid var(--gold);
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .cal-day.attended.today-marker { border-color: var(--gold-light); }
+
+  /* Tooltip */
+  .tooltip {
+    display: none;
+    position: fixed;
+    background: var(--ink);
+    color: var(--parchment);
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    line-height: 1.55;
+    max-width: 240px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+    z-index: 200;
+    border: 1px solid var(--gold);
+    pointer-events: none;
+  }
+
+  .tooltip.visible { display: block; }
+
+  .tooltip-date {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 0.58rem;
+    letter-spacing: 1px;
+    color: var(--gold);
+    margin-bottom: 5px;
+  }
+
+  .tooltip-verse { font-style: italic; }
+
+  /* Stats */
+  .stats-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .stat-box {
+    flex: 1;
+    background: rgba(44,26,14,0.06);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 3px;
+    padding: 12px 6px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 1.35rem;
+    color: var(--ink);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--ink-light);
+    font-style: italic;
+  }
+
+  /* Log */
+  .log-list {
+    max-height: 240px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .log-item {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+    animation: slideIn 0.3s ease;
+  }
+
+  .log-item:last-child { border-bottom: none; }
+
+  .log-date-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .log-check { color: var(--green); font-size: 0.95rem; }
+
+  .log-date {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .log-passage {
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    font-style: italic;
+    padding-left: 22px;
+    line-height: 1.4;
+  }
+
+  .log-notes {
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    padding-left: 22px;
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  .log-empty {
+    font-style: italic;
+    color: var(--ink-light);
+    font-size: 0.85rem;
+    opacity: 0.7;
+    padding: 10px 0;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 16px;
+    left: 16px;
+    max-width: 360px;
+    margin: 0 auto;
+    background: var(--green);
+    color: white;
+    padding: 14px 18px;
+    border-radius: 4px;
+    font-family: 'Lora', serif;
+    font-size: 0.88rem;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    transform: translateY(120px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    white-space: pre-line;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid rgba(201,168,76,0.3);
+    margin: 20px 0;
+  }
+
+  .footer-verse {
+    text-align: center;
+    font-style: italic;
+    font-size: 0.74rem;
+    color: var(--ink-light);
+    opacity: 0.75;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  .cal-hint {
+    font-size: 0.68rem;
+    color: var(--ink-light);
+    font-style: italic;
+    text-align: center;
+    margin-top: 6px;
+    opacity: 0.8;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="cross-icon">✝</span>
+  <h1>Bible Study<br>Attendance</h1>
+  <p class="subtitle">Daily tracker for your brother's devotion</p>
+</div>
+
+<div class="card">
+
+  <!-- Notifications -->
+  <div class="notif-section">
+    <span class="section-label">🔔 Notifications</span>
+    <div class="notif-row">
+      <span class="notif-status" id="notifStatus">Enable to receive alerts when attendance is marked</span>
+      <button class="enable-btn" id="notifBtn" onclick="requestNotifications()">Enable</button>
+    </div>
+  </div>
+
+  <!-- Today -->
+  <div class="today-section">
+    <div class="today-label">Today</div>
+    <div class="today-date" id="todayDate"></div>
+    <div id="markArea"></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Calendar -->
+  <span class="section-label" style="text-align:center;display:block;">Monthly Record</span>
+  <div class="month-nav">
+    <button class="nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+    <span class="month-name" id="monthName"></span>
+    <button class="nav-btn" onclick="changeMonth(1)">&#8250;</button>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <p class="cal-hint">Hover or tap a ✝ day to see the verse studied</p>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <span class="stat-num" id="statMonth">0</span>
+      <span class="stat-label">This Month</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num" id="statStreak">0</span>
+      <span class="stat-label">Streak &#128293;</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num" id="statTotal">0</span>
+      <span class="stat-label">Total Days</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Log -->
+  <span class="section-label">Recent Attendance Log</span>
+  <div class="log-list" id="logList"></div>
+
+  <p class="footer-verse">"Thy word is a lamp unto my feet, and a light unto my path."<br>— Psalm 119:105</p>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-date" id="tooltipDate"></div>
+  <div class="tooltip-verse" id="tooltipVerse"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span>&#10011;</span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+const STORAGE_KEY = 'bible_attendance_v2';
+
+function getData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { entries: {}, notifEnabled: false };
+    const d = JSON.parse(raw);
+    // Migrate v1 format
+    if (d && Array.isArray(d.attended)) {
+      const entries = {};
+      d.attended.forEach(date => { entries[date] = { verse: '', notes: '' }; });
+      return { entries, notifEnabled: d.notifEnabled || false };
+    }
+    return d;
+  } catch(e) { return { entries: {}, notifEnabled: false }; }
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatFull(dateStr) {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
+    weekday:'long', year:'numeric', month:'long', day:'numeric'
+  });
+}
+
+let viewYear = new Date().getFullYear();
+let viewMonth = new Date().getMonth();
+
+// ─── Today ────────────────────────────────────────────────────
+function renderToday() {
+  const today = todayStr();
+  const data = getData();
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', {
+    weekday:'long', month:'long', day:'numeric', year:'numeric'
+  });
+
+  const markArea = document.getElementById('markArea');
+  const entry = data.entries[today];
+
+  if (entry) {
+    markArea.innerHTML = `
+      <div class="marked-badge">
+        <span class="marked-icon">✝</span>
+        <div class="marked-info">
+          <div class="marked-title">✅ Attended Today</div>
+          ${entry.verse
+            ? `<div class="marked-verse">📖 ${entry.verse}</div>`
+            : `<div class="marked-verse" style="opacity:0.55;">No verse recorded</div>`}
+          ${entry.notes ? `<div class="marked-notes">${entry.notes}</div>` : ''}
+          <button class="edit-btn" onclick="showForm(true)">✏ Edit Entry</button>
+        </div>
+      </div>`;
+  } else {
+    showForm(false);
+  }
+}
+
+function showForm(isEdit) {
+  const today = todayStr();
+  const data = getData();
+  const existing = data.entries[today] || { verse: '', notes: '' };
+  const markArea = document.getElementById('markArea');
+
+  markArea.innerHTML = `
+    <div class="verse-input-group">
+      <div class="field-wrap">
+        <label class="field-label">📖 Bible Passage / Verse Reference</label>
+        <input type="text" id="verseRef"
+          placeholder="e.g. John 3:16 — or — Genesis 1:1-10"
+          value="${existing.verse ? existing.verse.replace(/"/g,'&quot;') : ''}" />
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">🖊 Notes or Key Message (optional)</label>
+        <textarea id="verseNotes" placeholder="What was the lesson or takeaway today?">${existing.notes || ''}</textarea>
+      </div>
+    </div>
+    <button class="mark-btn" onclick="markAttendance()">
+      ✝ ${isEdit ? 'Save Changes' : 'Mark Attended'}
+    </button>
+    ${isEdit ? `<span class="cancel-link" onclick="renderToday()">Cancel</span>` : ''}
+  `;
+
+  setTimeout(() => document.getElementById('verseRef')?.focus(), 60);
+}
+
+// ─── Mark ─────────────────────────────────────────────────────
+function markAttendance() {
+  const today = todayStr();
+  const data = getData();
+  const verse = (document.getElementById('verseRef')?.value || '').trim();
+  const notes = (document.getElementById('verseNotes')?.value || '').trim();
+
+  const isNew = !data.entries[today];
+  data.entries[today] = { verse, notes };
+  saveData(data);
+
+  const dateLabel = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  const verseMsg = verse ? '\n📖 ' + verse : '';
+  const msg = isNew
+    ? `Attendance marked for ${dateLabel}${verseMsg}`
+    : `Entry updated for ${dateLabel}${verseMsg}`;
+
+  showToast(msg);
+  if (isNew) sendNotification(msg.replace('\n', ' – '));
+
+  renderToday();
+  renderCalendar();
+  updateStats();
+  renderLog();
+}
+
+// ─── Calendar ─────────────────────────────────────────────────
+function renderCalendar() {
+  const data = getData();
+  const today = todayStr();
+  const months = ['January','February','March','April','May','June','July','August',
+                  'September','October','November','December'];
+  document.getElementById('monthName').textContent = `${months[viewMonth]} ${viewYear}`;
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = ['S','M','T','W','T','F','S']
+    .map(d => `<div class="cal-day-header">${d}</div>`).join('');
+
+  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    grid.innerHTML += `<div class="cal-day empty"></div>`;
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const entry = data.entries[dateStr];
+    const isAttended = !!entry;
+    const isToday = dateStr === today;
+
+    let cls = 'cal-day';
+    if (isAttended) cls += ' attended';
+    if (isToday) cls += ' today-marker';
+
+    const verseEsc = isAttended ? (entry.verse || 'No verse recorded').replace(/"/g,'&quot;').replace(/'/g,'&#39;') : '';
+    const notesEsc = isAttended ? (entry.notes || '').replace(/"/g,'&quot;').replace(/'/g,'&#39;') : '';
+
+    grid.innerHTML += `<div class="${cls}"
+      ${isAttended ? `data-date="${dateStr}" data-verse="${verseEsc}" data-notes="${notesEsc}"
+        onmouseenter="showTip(event,this)" onmouseleave="hideTip()" onclick="showTip(event,this)"` : ''}
+    >${isAttended ? '✝' : d}</div>`;
+  }
+}
+
+function changeMonth(delta) {
+  viewMonth += delta;
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  renderCalendar();
+  updateStats();
+}
+
+// ─── Tooltip ──────────────────────────────────────────────────
+let tipTimer;
+function showTip(event, el) {
+  clearTimeout(tipTimer);
+  const tip = document.getElementById('tooltip');
+  document.getElementById('tooltipDate').textContent = formatFull(el.dataset.date);
+  const v = el.dataset.verse || 'No verse recorded';
+  const n = el.dataset.notes;
+  document.getElementById('tooltipVerse').innerHTML =
+    `📖 ${v}` + (n ? `<br><span style="font-style:normal;font-size:0.75rem;opacity:0.85;margin-top:4px;display:block;">${n}</span>` : '');
+  tip.classList.add('visible');
+
+  const x = Math.min(event.clientX + 14, window.innerWidth - 255);
+  const y = Math.min(event.clientY + 14, window.innerHeight - 100);
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+}
+
+function hideTip() {
+  tipTimer = setTimeout(() => document.getElementById('tooltip').classList.remove('visible'), 250);
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.classList.contains('attended'))
+    document.getElementById('tooltip').classList.remove('visible');
+});
+
+// ─── Stats ────────────────────────────────────────────────────
+function updateStats() {
+  const data = getData();
+  const dates = Object.keys(data.entries).sort();
+  document.getElementById('statTotal').textContent = dates.length;
+
+  const prefix = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}`;
+  document.getElementById('statMonth').textContent = dates.filter(d => d.startsWith(prefix)).length;
+
+  let streak = 0;
+  const base = new Date();
+  for (let i = 0; ; i++) {
+    const d = new Date(base);
+    d.setDate(base.getDate() - i);
+    const s = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if (data.entries[s]) streak++;
+    else break;
+  }
+  document.getElementById('statStreak').textContent = streak;
+}
+
+// ─── Log ──────────────────────────────────────────────────────
+function renderLog() {
+  const data = getData();
+  const log = document.getElementById('logList');
+  const sorted = Object.entries(data.entries).sort((a,b) => b[0].localeCompare(a[0])).slice(0, 20);
+
+  if (sorted.length === 0) {
+    log.innerHTML = `<div class="log-empty">No attendance recorded yet. Mark your first day above!</div>`;
+    return;
+  }
+
+  log.innerHTML = sorted.map(([dateStr, entry]) => `
+    <div class="log-item">
+      <div class="log-date-row">
+        <span class="log-check">✝</span>
+        <span class="log-date">${formatFull(dateStr)}</span>
+      </div>
+      <div class="log-passage">
+        ${entry.verse ? `📖 ${entry.verse}` : '<span style="opacity:0.5;">No verse recorded</span>'}
+      </div>
+      ${entry.notes ? `<div class="log-notes">${entry.notes}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ─── Toast & Notification ─────────────────────────────────────
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 5000);
+}
+
+function sendNotification(body) {
+  if (Notification.permission === 'granted') {
+    new Notification('✝ Bible Study Attendance', { body });
+  }
+}
+
+async function requestNotifications() {
+  if (!('Notification' in window)) { showToast('Notifications not supported in this browser.'); return; }
+  const perm = await Notification.requestPermission();
+  updateNotifUI();
+  if (perm === 'granted') {
+    const data = getData(); data.notifEnabled = true; saveData(data);
+    showToast('Notifications enabled! You will be alerted every time attendance is marked.');
+  } else {
+    showToast('Permission denied. Please allow notifications in your browser settings.');
+  }
+}
+
+function updateNotifUI() {
+  const status = document.getElementById('notifStatus');
+  const btn = document.getElementById('notifBtn');
+  if (!('Notification' in window)) {
+    status.textContent = 'Not supported in this browser.';
+    btn.style.display = 'none'; return;
+  }
+  if (Notification.permission === 'granted') {
+    status.textContent = '✅ You will be notified on every mark';
+    btn.textContent = 'Enabled'; btn.disabled = true;
+    btn.style.background = '#9a8d5c'; btn.style.cursor = 'not-allowed';
+  } else if (Notification.permission === 'denied') {
+    status.textContent = '❌ Blocked — please allow in browser settings';
+    btn.style.display = 'none';
+  }
+}
+
+// ─── Init ─────────────────────────────────────────────────────
+renderToday();
+renderCalendar();
+updateStats();
+renderLog();
+updateNotifUI();
+</script>
+</body>
+</html>
