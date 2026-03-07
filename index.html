@@ -1051,6 +1051,20 @@ function markAttendance() {
   data.entries[today] = { verse, notes, markedAt: new Date().toISOString() };
   saveData(data);
 
+  // Save to Firestore database
+  addDoc(collection(db, "attendance"), {
+    date: today,
+    verse: verse,
+    notes: notes,
+    timestamp: new Date()
+  })
+  .then(() => {
+    console.log("Attendance saved to Firestore");
+  })
+  .catch((error) => {
+    console.error("Error saving attendance:", error);
+  });
+
   const dateLabel = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
   const verseMsg = verse ? '\n📖 ' + verse : '';
   const msg = isNew
@@ -1295,6 +1309,7 @@ function showToast(msg, isError) {
   else if (session?.role === 'admin') { enterAdmin(); }
   else { showPage('login'); }
 })();
+</script>
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
@@ -1330,5 +1345,6 @@ window.collection = collection;
 </script>
 </body>
 </html>
+
 
 
